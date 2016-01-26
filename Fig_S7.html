@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>publi</title>
+	<meta charset="utf-8">
+	<meta name="generator" content="leafletR">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js"></script>
+	<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+	<script src="https://rawgit.com/jseppi/Leaflet.MakiMarkers/master/Leaflet.MakiMarkers.js"></script>
+	<style type="text/css">
+		body {
+			padding: 0;
+			margin: 0;
+		}
+		html, body, #map {
+			height: 100%;
+		}
+		table, td {
+			border-collapse: collapse;
+			border-style: solid;
+			border-width: 1px;
+			border-color: #e9e9e9;
+			padding: 5px;
+		}
+		.evenrowcol{
+			background-color: #f6f6f6;
+		}
+		.legend {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+			line-height: 17px;
+			color: #555;
+		}
+		.legend i {
+			width: 17px;
+			height: 17px;
+			float: left;
+			margin-right: 8px;
+		}
+		.legend table, .legend td {
+			border: none;
+		}
+		.value {
+			border: none;
+			padding: 0px 0px 0px 8px;
+			text-align: left;
+			vertical-align: middle;
+		}
+		.circle {
+			border: none;
+			padding: 0px;
+			text-align: center;
+			vertical-align: middle;
+		}
+		.shape {
+			padding: 0px;
+			text-align: center;
+			vertical-align: middle;
+		}
+		.ln {
+			stroke: #0033ff;
+			stroke-width: 5;
+			stroke-opacity: 0.5;
+			stroke-linecap: round;
+		}
+		.plgn {
+			fill: #0033ff;
+			fill-opacity: 0.5;
+			stroke: #0033ff;
+			stroke-width: 4;
+			stroke-opacity: 0.5;
+			stroke-linejoin: round;
+		}
+		.mrks {
+		    padding: 0px;
+			text-align: center;
+		    height:30px;
+		}
+		.mrkm {
+			padding: 0px;
+			text-align: center;
+		    height:40px;
+		}
+		.mrkl {
+			padding: 0px;
+			text-align: center;
+		    height:52px;
+		}
+		.crcl {
+			fill: #0033ff;
+			fill-opacity: 0.5;
+			stroke: #0033ff;
+			stroke-width: 2;
+			stroke-opacity: 0.5;
+		}
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script type="text/javascript">
+		var map = L.map('map').setView([25,10], 3);
+		
+		// scale bar
+		L.control.scale().addTo(map);
+
+		// base layer
+		var baseMaps = {};
+		var baseMap = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.png', {"subdomains":"1234","type":"osm","attribution":"Tiles &copy; <a href=\"http://www.mapquest.com\", target=\"_blank\">MapQuest</a>, Map data &copy; <a href=\"http://openstreetmap.org/copyright\", target=\"_blank\">OpenStreetMap contributors</a>"});
+		baseMap.addTo(map);
+		baseMaps["MapQuest OSM"] = baseMap;
+		var baseMap = L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {"attribution":"Tiles &copy; <a href=\"http://stamen.com\", target=\"_blank\">Stamen Design</a> (<a href=\"http://creativecommons.org/licenses/by/3.0\", target=\"_blank\">CC BY 3.0</a>), Map data &copy; <a href=\"http://openstreetmap.org\", target=\"_blank\">OpenStreetMap</a> under <a href=\"http://creativecommons.org/licenses/by-sa/3.0\", target=\"_blank\">CC BY SA</a>"});
+		baseMap.addTo(map);
+		baseMaps["Stamen Watercolor"] = baseMap;
+		var baseMap = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {"attribution":"Tiles &copy; <a href=\"http://cartodb.com/attributions\", target=\"_blank\">CartoDB</a>, Map data &copy; <a href=\"http://openstreetmap.org/copyright\", target=\"_blan\">OpenStreetMap contributors</a>"});
+		baseMap.addTo(map);
+		baseMaps["CartoDB Dark matter"] = baseMap;
+		var baseMap = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {"attribution":"&copy; <a href=\"http://openstreetmap.org/copyright\", target=\"_blank\">OpenStreetMap contributors</a>"});
+		baseMap.addTo(map);
+		baseMaps["OpenStreetMap"] = baseMap;
+
+		// popup
+		function onEachFeature(feature, layer) {
+			if (feature.properties &&  feature.properties["Title"] && feature.properties["Authors"] && feature.properties["Year"] && feature.properties["Journal"] && feature.properties["Fire"] && feature.properties["Biome"]) {
+				layer.bindPopup(
+					"<table>" +
+					"<tr class='oddrowcol'><td>Title: </td><td>"+feature.properties["Title"]+"</td></tr>" +
+					"<tr class='evenrowcol'><td>Authors: </td><td>"+feature.properties["Authors"]+"</td></tr>" +
+					"<tr class='oddrowcol'><td>Year: </td><td>"+feature.properties["Year"]+"</td></tr>" +
+					"<tr class='evenrowcol'><td>Journal: </td><td>"+feature.properties["Journal"]+"</td></tr>" +
+					"<tr class='oddrowcol'><td>Fire: </td><td>"+feature.properties["Fire"]+"</td></tr>" +
+					"<tr class='evenrowcol'><td>Biome: </td><td>"+feature.properties["Biome"]+"</td></tr>" +
+					"</table>"
+				);
+			}
+		}
+
+		// styling
+		var style1 = L.MakiMarkers.icon({icon: "fire-station", color: "#00CDCD", size: "m"});
+		var style2 = L.MakiMarkers.icon({icon: "fire-station", color: "#7D26CD", size: "m"});
+		var style3 = L.MakiMarkers.icon({icon: "fire-station", color: "#458B00", size: "m"});
+		var style4 = L.MakiMarkers.icon({icon: "fire-station", color: "#FF4500", size: "m"});
+		var style5 = L.MakiMarkers.icon({icon: "chemist", color: "#000000", size: "m"});
+		var style6 = L.MakiMarkers.icon({icon: "chemist", color: "#7D26CD", size: "m"});
+		var style7 = L.MakiMarkers.icon({icon: "chemist", color: "#458B00", size: "m"});
+		var style8 = L.MakiMarkers.icon({icon: "circle", color: "#00CDCD", size: "m"});
+		var style9 = L.MakiMarkers.icon({icon: "circle", color: "#7D26CD", size: "m"});
+		var style10 = L.MakiMarkers.icon({icon: "circle", color: "#458B00", size: "m"});
+		var style11 = L.MakiMarkers.icon({icon: "circle", color: "#FF4500", size: "m"});
+
+		// data layers
+		var layers = {};
+		function addDataToMap(data, style, label, layer, lc) {
+			if("options" in style) {
+				layers[layer] = L.geoJson(data, {
+					onEachFeature: (typeof onEachFeature == "undefined") ? undefined : onEachFeature,
+					pointToLayer: (typeof label == "undefined") ? (function (feature, latlng) {return L.marker(latlng, {icon: style});}) : (function (feature, latlng) {return L.marker(latlng, {icon: style}).bindLabel(feature.properties[label], {direction: 'right'});})
+				});
+			} else {
+				layers[layer] = L.geoJson(data, {
+					onEachFeature: (typeof onEachFeature == "undefined") ? undefined : onEachFeature,
+					pointToLayer: (typeof label == "undefined") ? (function (feature, latlng) {return L.circleMarker(latlng);}) : (function (feature, latlng) {return L.circleMarker(latlng).bindLabel(feature.properties[label], {direction: 'right'});}),
+					style: style
+				});
+			}
+			layers[layer].addTo(map);	
+
+			// layer control
+			if(lc != undefined) {
+				L.control.layers(baseMaps, layers).addTo(map);
+			};
+		};
+		
+		if(typeof style1 == "undefined") style1 = undefined;
+		if(typeof label1 == "undefined") label1 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Carbon sequestration is related to mycorrhizal fungal community shifts during long-term succession in boreal forests.",
+		        "Authors": "Clemmensen KE, Finlay RD, Dahlberg A, Stenlid J, Wardle DA, Lindahl BD",
+		        "Year": "2015",
+		        "Journal": "The New phytologist",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [17.75,66.25]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Resilience of Arctic mycorrhizal fungal communities after wildfire facilitated by resprouting shrubs",
+		        "Authors": "Hewitt RE, Bent E, Hollingsworth TN, Chapin FSII, Taylor DL",
+		        "Year": "2013",
+		        "Journal": "Ecoscience",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-150.975278,68.146667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Changes in Soil Fungal Communities, Extracellular Enzyme Activities, and Litter Decomposition Across a Fire Chronosequence in Alaskan Boreal Forests",
+		        "Authors": "Holden SR, Gutierrez A,Treseder KK",
+		        "Year": "2013",
+		        "Journal": "Ecosystems",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-145.723507,64.059952]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhizal fungal communities in late-successional Swedish Boreal forests, and their composition following wildfire",
+		        "Authors": "Jonsson L, Dahlberg A, Nilsson MC, Zackrisson O, Karen O",
+		        "Year": "1999",
+		        "Journal": "Molecular Ecology",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [22.348516,66.590218]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhizal fungal succession coincides with shifts in organic nitrogen availability and canopy closure in post-wildfire jack pine forests",
+		        "Authors": "LeDuc SD, Lilleskov EA, Horton TR, Rothstein DE",
+		        "Year": "2013",
+		        "Journal": "Oecologia",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-84.5,44.5]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "The regeneration niche of white spruce following fire in the mixedwood Boreal forest",
+		        "Authors": "Purdy BG, Macdonald SE, Dale MRT",
+		        "Year": "2002",
+		        "Journal": "Silva Fennica",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-111.697998046875,55.749376204483]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Relationships among fires, fungi, and soil dynamics in Alaskan B Forests",
+		        "Authors": "Treseder KK, Mack MC, Cross A",
+		        "Year": "2004",
+		        "Journal": "Ecological Applications",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-145.733333333333,63.9166667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhizal fungal succession in jack pine stands following wildfire",
+		        "Authors": "Visser S",
+		        "Year": "1995",
+		        "Journal": "New Phytologist",
+		        "Fire": "WF",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-111.95,60.0166667]
+		      }
+		    }
+		  ]
+		}, style1, label1, "WF Bor");
+		if(typeof style2 == "undefined") style2 = undefined;
+		if(typeof label2 == "undefined") label2 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Mycorrhizal colonization ofPinus muricatafrom resistant propagules after a stand-replacing wildfire",
+		        "Authors": "Baar J, Horton TR, Kretzer AM, Bruns TD",
+		        "Year": "1999",
+		        "Journal": "New Phytologist",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.883333,38.066667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Common environmental factors explain both ectomycorrhizal species diversity and pine regeneration variability in a post-fire Mediterranean forest",
+		        "Authors": "Buscardo E, Freitas H, Pereira JS, De Angelis P",
+		        "Year": "2011",
+		        "Journal": "Mycorrhiza",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [7.73333333333333,43.85]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Is the potential for the formation of common mycorrhizal networks influenced by fire frequency?",
+		        "Authors": "Buscardo E, Rodriguez-Echeverria S, Barrico L, Garcia MA, Freitas H, Martin MP, De Angelis P, Muller LAH",
+		        "Year": "2012",
+		        "Journal": "Soil Biology & Biochemistry",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-7.83333333333333,39.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Contrasting soil fungal communities in Mediterranean pine forests subjected to different wildfire frequencies",
+		        "Authors": "Buscardo E, Rodriguez-Echeverria S, Freitas H, De Angelis P, Pereira JS, Muller LAH",
+		        "Year": "2015",
+		        "Journal": "Fungal Diversity",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-7.83333333333333,39.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Impact of wildfire return interval on the ectomycorrhizal resistant propagules communities of a Mediterranean open forest",
+		        "Authors": "Buscardo E, Rodriguez-Echeverria S, Martin MP, De Angelis P, Pereira JS, Freitas H",
+		        "Year": "2010",
+		        "Journal": "Fungal Biology",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-7.83333333333333,39.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Post-fire, seasonal and annual dynamics of the ectomycorrhizal community in aQuercus ilexL. forest over a 3-year period",
+		        "Authors": "de Roman M, de Miguel AM",
+		        "Year": "2005",
+		        "Journal": "Mycorrhiza",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-2.27694444444444,42.6413889]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Below-ground ectomycorrhizal community structure in a recently burned bishop pine forest",
+		        "Authors": "Grogan P, Baar J, Bruns T D",
+		        "Year": "2000",
+		        "Journal": "Journal of Ecology",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.84,38.0608333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Post-fire fungal succession in a Meditteranean ecosystem dominated byCistus ladanifer L.",
+		        "Authors": "Hernandez-Rodriguez M, Oria-de-Rueda JA, Martin-Pinto P",
+		        "Year": "2013",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-6.286492,41.942252]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Early effects of a wildfire on the diversity and production of fungal communities in Mediterranean vegetation types dominated byCistus ladaniferandPinus pinasterin Spain",
+		        "Authors": "Martin-Pinto P, Vaquerizo W, Penalver F, Olaizola J, Oria-de-Rueda JA",
+		        "Year": "2006",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-6.286492,41.942252]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Changes in sporocarp production and vegetation following wildfire in a Mediterranean Forest Ecosystem dominated byPinus nigrain Northern Spain",
+		        "Authors": "Mediavilla O, Oria-de-Rueda JA, Martin-Pinto P",
+		        "Year": "2014",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-4.584061,42.555909]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Spore heat resistance plays an important role in disturbance-mediated assemblage shift of ectomycorrhizal fungi colonizingPinus muricataseedlings",
+		        "Authors": "Peay KG, Garbelotto M, Bruns TD",
+		        "Year": "2009",
+		        "Journal": "Journal of Ecology",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.833333333333,38.0666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Effect of fire severity and site slope on diversity and structure of the ectomycorrhizal fungal community associated with post-fire regeneratedPinus pinasterAit. seedlings",
+		        "Authors": "Rincon A, Pueyo JJ",
+		        "Year": "2010",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-2.064281,40.711525]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Structure and phylogenetic diversity of post-fire ectomycorrhizal communities of maritime pine",
+		        "Authors": "Rincon, A, Santamaria BP, Ocana L, Verdu M",
+		        "Year": "2013",
+		        "Journal": "Mycorrhiza",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-2.43333333333333,41.05]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Changes and effects of a natural fire on ectomycorrhizal inoculum potential of soil in aPinus halepensisforest",
+		        "Authors": "Torres P, Honrubia M",
+		        "Year": "1997",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [0.04692,40.10109]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Post-fire production of mushrooms inPinus pinasterforests using classificatory models",
+		        "Authors": "Gassibe PV, Fabero RF, Hernandez-Rodriguez M, Oria-de-Rueda JA, Oviedo FB, Martin-Pinto P",
+		        "Year": "2014",
+		        "Journal": "Journal of forest research",
+		        "Fire": "WF",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-6.51805583333333,41.820278]
+		      }
+		    }
+		  ]
+		}, style2, label2, "WF Med");
+		if(typeof style3 == "undefined") style3 = undefined;
+		if(typeof label3 == "undefined") label3 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Effect of erosion on ectomycorrhizal inoculum potential of soil following forest-fire in southwest Oregon",
+		        "Authors": "Amaranthus, MP and Trappe, JM",
+		        "Year": "1993",
+		        "Journal": "Plant and Soil",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.717222,42.080833]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhizal fungal community assembly on regenerating Douglas-fir after wildfire and clearcut harvesting",
+		        "Authors": "Barker JS, Simard SW, Jones MD, Durall DM",
+		        "Year": "2013",
+		        "Journal": "Oecologia",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-120,51]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Initial ectomycorrhizal density response to wildfire in the New Jersey Pine Barren Plains",
+		        "Authors": "Buchholz K, Gallagher M",
+		        "Year": "1982",
+		        "Journal": "Bulletin of the Torrey Botanical Club",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-74.340435,39.805868]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Functional complementarity of Douglas-fir ectomycorrhizas for extracellular enzyme activity after wildfire or clearcut logging",
+		        "Authors": "Jones MD, Twieg BD, Ward V, Barker J, Durall DM, Simard SW",
+		        "Year": "2010",
+		        "Journal": "Functional Ecology",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-120.116666666667,51.2]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhiza succession patterns inPinus sylvestrisforests after stand-replacing fire in the Central Alps",
+		        "Authors": "Kipfer T, Moser B, Egli S, Wohlgemuth T, Ghazoul J",
+		        "Year": "2011",
+		        "Journal": "Oecologia",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [7.44049072265625,46.0324398114016]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Wildfire and post-fire management effects on early fungal succession inPinus mugoplantations, located in Curonian Spit (Lithuania)",
+		        "Authors": "Kutorga E, Adamonyte G, Irsenaite R, Juzenas S, Kasparavicius J, Markovskaja S, Motiejunaite J, Treigiene A",
+		        "Year": "2012",
+		        "Journal": "Geoderma",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [21.064805,55.432882]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Long term effects of fire on ectomycorrhizas and soil properties inNothofagus pumilioforests in Argentina",
+		        "Authors": "Longo SM, Urcelay C, Nouhra E",
+		        "Year": "2011",
+		        "Journal": "Forest Ecology and Management",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-71.5,-41]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Effect of burning on the mycorrhizal fungi of Scots pinePinus sylvestrisat Boat of Garten, Inverness-shire, Scotland",
+		        "Authors": "MacKay J",
+		        "Year": "2004",
+		        "Journal": "Conservation Evidence",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-3.752832,57.248178]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Mycorrhization, physiognomy, and first-year survivability of conifer seedlings following natural fire in Grand Teton National Park",
+		        "Authors": "Miller SL, McClean TM, Stanton NL, Williams SE",
+		        "Year": "1998",
+		        "Journal": "Canadian Journal of Forest Research",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-110.683333333333,43.5]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Post-fire seedlings ofNothofagus alpinain Southern Chile show strong dominance of a single ectomycorrhizal fungus and a vertical shift in root architecture",
+		        "Authors": "Palfner G, Canseco MI, Casanova-Katny A",
+		        "Year": "2008",
+		        "Journal": "Plant and Soil",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-71.5,-38.0166667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Epigeous macrofungal succession in the first five years following a wildfire in karri (Eucalyptus diversicolor) regrowth forest in Western Australia",
+		        "Authors": "Robinson RM, Mellican AE, Smith RH",
+		        "Year": "2008",
+		        "Journal": "Austral Ecology",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [116.101025,-34.39158]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "The effect of soil disturbance on growth and ectomycorrhizae of Douglas-fir and western hemlock seedlings: a greenhouse bioassay",
+		        "Authors": "Schoenberger MM, Perry DA",
+		        "Year": "1982",
+		        "Journal": "Canadian Journal of Forest Research",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.333333333333,44.1666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Influence of fire on mycorrhizal colonization of planted and natural whitebark pine seedlings: ecology and management implications.",
+		        "Authors": "Trusty P, Cripps CL",
+		        "Year": "2011",
+		        "Journal": "Proceedings of the High Five Symposium",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-110.368333,45.2725]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Ectomycorrhizal fungal succession in mixed temperate forests",
+		        "Authors": "Twieg BD, Durall DM,; Simard SW",
+		        "Year": "2007",
+		        "Journal": "New Phytologist",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-119.25,50.7]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Specific features of root system morphology and mycorrhiza formation in scots pine seedlings from burned-out areas",
+		        "Authors": "Veselkin DV, Sannikov SN, Sannikova NS",
+		        "Year": "2010",
+		        "Journal": "Russian Journal of Ecology",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [65.0666666666667,55.6]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Occurence of ectomycorhizal and saprophytic Discomycetes after a wild fire in a Eucalyptus forest",
+		        "Authors": "Warcup JH",
+		        "Year": "1990",
+		        "Journal": "Mycological Research",
+		        "Fire": "WF",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [138.694925,-35.241287]
+		      }
+		    }
+		  ]
+		}, style3, label3, "WF Temp");
+		if(typeof style4 == "undefined") style4 = undefined;
+		if(typeof label4 == "undefined") label4 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "The Impact of the 1998 Forest Fire on Ectomycorrhizae of Dipterocarp Trees and their Recovery in Tropical Rain Forests of East Kalimantan, Indonesia",
+		        "Authors": "Akema T, Nurhiftisni I, Suciatmih, Simbolon H",
+		        "Year": "2009",
+		        "Journal": "Jarq-Japan Agricultural Research Quarterly",
+		        "Fire": "WF",
+		        "Biome": "Trop"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [116.866666666667,-1.0166667]
+		      }
+		    }
+		  ]
+		}, style4, label4, "WF Trop");
+		if(typeof style5 == "undefined") style5 = undefined;
+		if(typeof label5 == "undefined") label5 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Effects of hardened wood ash on microbial activity, plant growth and nutrient uptake by ectomycorrhizal spruce seedlings",
+		        "Authors": "Mahmood S, Finlay RD, Fransson A-M, Wallander H",
+		        "Year": "2003",
+		        "Journal": "FEMS Microbiology Ecology",
+		        "Fire": "BioA",
+		        "Biome": "BioA"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [13.080912,56.957027]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Buried charcoal layer and ectomycorrhizae cooperatively promote the growth ofLarix gmeliniiseedlings",
+		        "Authors": "Makoto K, Tamai Y, Kim YS, Koike T",
+		        "Year": "2010",
+		        "Journal": "Plant and Soil",
+		        "Fire": "BioA",
+		        "Biome": "BioA"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [141.933333333333,45]
+		      }
+		    }
+		  ]
+		}, style5, label5, "BioA");
+		if(typeof style6 == "undefined") style6 = undefined;
+		if(typeof label6 == "undefined") label6 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Testing the ecological stability of ectomycorrhizal symbiosis: effects of heat, ash and mycorrhizal colonization onPinus muricataseedling performance",
+		        "Authors": "Peay KG, Bruns TD, Garbelotto M",
+		        "Year": "2010",
+		        "Journal": "Plant and Soil",
+		        "Fire": "BioA",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.833333333333,38.0666667]
+		      }
+		    }
+		  ]
+		}, style6, label6, "BioA Med");
+		if(typeof style7 == "undefined") style7 = undefined;
+		if(typeof label7 == "undefined") label7 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "The effects of heat treatments on ectomycorrhizal resistant propagules and their ability to colonize bioassay seedlings",
+		        "Authors": "Izzo A, Canright M, Bruns TD",
+		        "Year": "2006",
+		        "Journal": "Mycological Research",
+		        "Fire": "BioA",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-119.035555,36.9666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Susceptibility of ectomycorrhizal fungi to soil heating",
+		        "Authors": "Kipfer T, Egli S, Ghazoul J, Moser B, Wohlgemuth T",
+		        "Year": "2010",
+		        "Journal": "Fungal Biology",
+		        "Fire": "BioA",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [7.63611111111111,46.4213889]
+		      }
+		    }
+		  ]
+		}, style7, label7, "BioA Temp");
+		if(typeof style8 == "undefined") style8 = undefined;
+		if(typeof label8 == "undefined") label8 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Post-fire legacy of ectomycorrhizal fungal communities in the Swedish Boreal forest in relation to fire severity and logging intensity",
+		        "Authors": "Dahlberg A, Schimmel J, Taylor AFS, Johannesson H",
+		        "Year": "2001",
+		        "Journal": "Biological Conservation",
+		        "Fire": "PB",
+		        "Biome": "Bor"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [16,61.1]
+		      }
+		    }
+		  ]
+		}, style8, label8, "PB Bor");
+		if(typeof style9 == "undefined") style9 = undefined;
+		if(typeof label9 == "undefined") label9 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Survival ofSuillus pungensandAmanita franchetiectomycorrhizal genets was rare or absent after a stand-replacing wildfire",
+		        "Authors": "Bruns T, Tan J, Bidartondo M, Szaro T, Redecker D",
+		        "Year": "2002",
+		        "Journal": "New Phytologist",
+		        "Fire": "PB",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.853333333333,38.0544444]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Short-term effects of fire and forest thinning on truffle abundance and consumption byNeotamias speciosusin the Sierra Nevada of California",
+		        "Authors": "Meyer MD, North MP, Kelt DA",
+		        "Year": "2005",
+		        "Journal": "Canadian Journal of Forest Research",
+		        "Fire": "PB",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-119.01667,36.96666]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Mechanical mastication and prescribed fire in conifer - hardwood chaparral: differing responses of ectomycorrhizae and truffles",
+		        "Authors": "Southworth D, Donohue J, Frank JL, Gibson J",
+		        "Year": "2011",
+		        "Journal": "International Journal of Wildland Fire",
+		        "Fire": "PB",
+		        "Biome": "Med"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-123,42.0666667]
+		      }
+		    }
+		  ]
+		}, style9, label9, "PB Med");
+		if(typeof style10 == "undefined") style10 = undefined;
+		if(typeof label10 == "undefined") label10 = undefined;
+		addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Basidiomycete fungal communities in Australian sclerophyll forest soil are altered by repeated prescribed burning",
+		        "Authors": "Anderson IC, Bastias BA, Genney DR, Parkin PI, Cairney JWG",
+		        "Year": "2007",
+		        "Journal": "Mycological Research",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [152.899999722222,-26.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Long term repeated prescribed burning increases evenness in the basidiomycete laccase gene pool in forest soils",
+		        "Authors": "Artz RRE, Reid E, Anderson IC, Campbell CD, Cairney JWG",
+		        "Year": "2009",
+		        "Journal": "Fems Microbiology Ecology",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [152.899999722222,-26.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Influence of repeated prescribed burning on the soil fungal community in an eastern Australian wet sclerophyll forest",
+		        "Authors": "Bastias BA, Huang ZQ, Blumfield T, Xu Z, Cairney JWG",
+		        "Year": "2006",
+		        "Journal": "Soil Biology & Biochemistry",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [152.899999722222,-26.8333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Deep Ion Torrent sequencing identifies soil fungal community shifts after frequent prescribed fires in a southeastern US forest ecosystem",
+		        "Authors": "Brown SP, Callaham MA, Oliver AK, Jumpponen A",
+		        "Year": "2013",
+		        "Journal": "FEMS Microbiology Ecology",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-90.7333333333333,32.9666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Investigation of the influence of prescribed burning on ITS profiles of ectomycorrhizal and other soil fungi at three Australian sclerophyll forest sites",
+		        "Authors": "Chen DM, Cairney JWG",
+		        "Year": "2002",
+		        "Journal": "Mycological Research",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [150,-33.6666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Long-term interval burning alters fine root and mycorrhizal dynamics in a ponderosa pine forest",
+		        "Authors": "Hart SC, Classen AT, Wright RJ",
+		        "Year": "2005",
+		        "Journal": "Journal of Applied Ecology",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-111.75,35.2666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Interaction between fire, mycophagous mammals, and dispersal of ectomycorhizal fungi in Euclyptus forest",
+		        "Authors": "Johnson CN",
+		        "Year": "1995",
+		        "Journal": "Oecologia",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [147.416666666667,-42.5166667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Arbuscular mycorrhizal propagule densities respond rapidly to ponderosa pine restoration treatments",
+		        "Authors": "Korb JE, Johnson NC, Covingtonn WW",
+		        "Year": "2003",
+		        "Journal": "Journal of Applied Ecology",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-112.501009,35.837051]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "The effect of regeneration burns on the growth, nutrient acquisition and mycorrhizae ofEucalyptus regnansF. Muell. (mountain ash) seedlings",
+		        "Authors": "Launonen TM, Ashton DH, Keane PJ",
+		        "Year": "1999",
+		        "Journal": "Plant and Soil",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [145.15,-37.1333333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Fruiting of ectomycorrhizal basidiomycetes on unburned and prescribed burned hard-pine/hardwood plots after drought-breaking rainfalls on the Allegheny Mountains of southwestern Virginia",
+		        "Authors": "Palmer JG, Miller OK, Gruhn C",
+		        "Year": "1994",
+		        "Journal": "Mycorrhiza",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-80.447439,37.278491]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Early impacts of forest restoration treatments on the ectomycorrhizal fungal community and fine root biomass in a mixed conifer forest",
+		        "Authors": "Smith JE, McKay D, Brenner D, McIver J, Spatafora JW",
+		        "Year": "2005",
+		        "Journal": "Journal of Applied Ecology",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-117.05,45.0666667]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Short-term effects of seasonal prescribed burning on the ectomycorrhizal fungal community and fine root biomass in ponderosa pine stands in the Blue Mountains of Oregon",
+		        "Authors": "Smith JE, McKay D, Niwa CG, Thies WG, Brenner G, Spatafora JW",
+		        "Year": "2004",
+		        "Journal": "Canadian Journal of Forest Research",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-118.083333333333,43.0833333]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Early effects of prescribed fire on the structure of the ectomycorrhizal fungus community in a Sierra Nevada ponderosa pine forest",
+		        "Authors": "Stendell ER, Horton TR, Bruns TD",
+		        "Year": "1999",
+		        "Journal": "Mycological Research",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-119.136944444444,36.98]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Changes in ectomycorrhizal communities and nutrient availability following prescribed burns in two upland pine-oak forests in the New Jersey pine barrens",
+		        "Authors": "Tuininga AR, Dighton J",
+		        "Year": "2004",
+		        "Journal": "Canadian Journal of Forest Research",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-74.495207,39.905821]
+		      }
+		    },
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Occurrence of mycorrhizae after logging and slash burning in the Douglas-fir forest type",
+		        "Authors": "Wright E, Tarrant RF",
+		        "Year": "1958",
+		        "Journal": "U.S. Department of Agriculture, Forest Service",
+		        "Fire": "PB",
+		        "Biome": "Temp"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [-122.860715,44.111683]
+		      }
+		    }
+		  ]
+		}, style10, label10, "PB Temp");
+		if(typeof style11 == "undefined") style11 = undefined;
+		if(typeof label11 == "undefined") label11 = undefined;
+    addDataToMap({
+		  "type": "FeatureCollection",
+		  "features": [
+		    {
+		      "type": "Feature",
+		      "properties": {
+		        "Title": "Mycorrhizas in the Kakadu region of tropical Australia .2. Propagules of mycorrhizal fungi in disturbed habitats",
+		        "Authors": "Brundrett, MC; Ashwath, N; Jasper, DA",
+		        "Year": "1996",
+		        "Journal": "Plant and Soil",
+		        "Fire": "PB",
+		        "Biome": "Trop"
+		      },
+		      "geometry": {
+		        "type": "Point",
+		        "coordinates": [132.673056,-12.421111]
+		      }
+		    }
+		  ]
+		}, style11, label11, "PB Trop", "add");
+
+		// legend
+		var legend = L.control({position: 'bottomright'});
+		legend.onAdd = function(map) {
+			var div = L.DomUtil.create('div', 'legend');
+			div.innerHTML += '<table><tr><td class="mrk'+style1.options.size+'" style="width: 32px; background: transparent url('+style1.options.iconUrl+') top center no-repeat;"></td><td class="value">WF Bor</td></tr><tr><td class="mrk'+style2.options.size+'" style="width: 32px; background: transparent url('+style2.options.iconUrl+') top center no-repeat;"></td><td class="value">WF Med</td></tr><tr><td class="mrk'+style3.options.size+'" style="width: 32px; background: transparent url('+style3.options.iconUrl+') top center no-repeat;"></td><td class="value">WF Temp</td></tr><tr><td class="mrk'+style4.options.size+'" style="width: 32px; background: transparent url('+style4.options.iconUrl+') top center no-repeat;"></td><td class="value">WF Trop</td></tr><tr><td class="mrk'+style5.options.size+'" style="width: 32px; background: transparent url('+style5.options.iconUrl+') top center no-repeat;"></td><td class="value">BioA</td></tr><tr><td class="mrk'+style6.options.size+'" style="width: 32px; background: transparent url('+style6.options.iconUrl+') top center no-repeat;"></td><td class="value">BioA Med</td></tr><tr><td class="mrk'+style7.options.size+'" style="width: 32px; background: transparent url('+style7.options.iconUrl+') top center no-repeat;"></td><td class="value">BioA Temp</td></tr><tr><td class="mrk'+style8.options.size+'" style="width: 32px; background: transparent url('+style8.options.iconUrl+') top center no-repeat;"></td><td class="value">PB Bor</td></tr><tr><td class="mrk'+style9.options.size+'" style="width: 32px; background: transparent url('+style9.options.iconUrl+') top center no-repeat;"></td><td class="value">PB Med</td></tr><tr><td class="mrk'+style10.options.size+'" style="width: 32px; background: transparent url('+style10.options.iconUrl+') top center no-repeat;"></td><td class="value">PB Temp</td></tr><tr><td class="mrk'+style11.options.size+'" style="width: 32px; background: transparent url('+style11.options.iconUrl+') top center no-repeat;"></td><td class="value">PB Trop</td></tr></table>'
+			return div;
+		};
+		legend.addTo(map);
+	</script>
+</body>
+</html>
