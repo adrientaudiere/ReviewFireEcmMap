@@ -4,7 +4,7 @@ To navigate on the map, download the map (html format) and then open with your b
 
 * Click on the file you want to download.
 * Click it to view the contents within the GitHub UI.
-* In the top right, right click the Raw button.
-* Save as...
-* Open with your browser
+* In the top right, click the Raw button.
+* Cick on save as...
+* Then open the download .html file with your browser (e.g. Firefox).
 
